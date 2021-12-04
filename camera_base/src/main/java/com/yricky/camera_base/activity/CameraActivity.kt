@@ -38,7 +38,6 @@ class CameraActivity:AppCompatActivity() {
             ThreadPoolExecutor(1,8,10L, TimeUnit.MILLISECONDS, LinkedBlockingQueue(12))
         }
     }
-    var mediaRecorder:MediaRecorder? = null
 
     lateinit var surfaceView: SurfaceView
 
@@ -58,11 +57,11 @@ class CameraActivity:AppCompatActivity() {
             })
         surfaceView = findViewById(R.id.sfv_preview)
         findViewById<ImageView>(R.id.btn_cap).setOnClickListener {
-            //takePicture()
-            if(rec)
-                stopRec("${System.currentTimeMillis()}.mp4")
-            else
-                startRec()
+            takePicture()
+//            if(rec)
+//                stopRec("${System.currentTimeMillis()}.mp4")
+//            else
+//                startRec()
         }
         findViewById<ImageView>(R.id.btn_switch).setOnClickListener {
             if(!rec){
@@ -84,21 +83,9 @@ class CameraActivity:AppCompatActivity() {
         val cameraId = if(useBackCam) "0" else "1"
         cameraInst?.close()
         surfaceView.post {
-            mediaRecorder = MediaRecorder().apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setVideoSource(MediaRecorder.VideoSource.SURFACE)
-                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                setOutputFile(File(externalCacheDir,"cache.mp4").absolutePath)
-                setVideoEncodingBitRate(10000000)
-                setVideoFrameRate(30)
-                setVideoSize(surfaceView.width, surfaceView.height)
-                setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setPreviewDisplay(surfaceView.holder.surface)
-                prepare()
-            }
+
             //mediaRecorder.setVideoSize(surfaceView.width,surfaceView.height)
-            val targets = listOf(mediaRecorder?.surface)
+            val targets = listOf(surfaceView.holder.surface)
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.CAMERA
@@ -111,7 +98,7 @@ class CameraActivity:AppCompatActivity() {
                         camera.createCaptureSession(targets, object: CameraCaptureSession.StateCallback() {
                             override fun onConfigured(session: CameraCaptureSession) {
                                 val captureRequest = session.device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-                                captureRequest.addTarget(mediaRecorder!!.surface)
+                                captureRequest.addTarget(surfaceView.holder.surface)
                                 session.setRepeatingRequest(captureRequest.build(), null, null)
                             }
                             override fun onConfigureFailed(session: CameraCaptureSession) = Unit
@@ -164,26 +151,26 @@ class CameraActivity:AppCompatActivity() {
         }, null)
     }
 
-    private fun startRec(){
-        requestedOrientation = if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
-        rec = true
-        mediaRecorder?.start()
-
-    }
-
-    private fun stopRec(fName:String){
-        mediaRecorder?.stop()
-        mediaRecorder?.reset()
-        rec = false
-        File(externalCacheDir,"cache.mp4")
-            .renameTo(File(getExternalFilesDir("video"),fName))
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
-    }
+//    private fun startRec(){
+//        requestedOrientation = if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+//        } else {
+//            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+//        }
+//
+//        rec = true
+//        mediaRecorder?.start()
+//
+//    }
+//
+//    private fun stopRec(fName:String){
+//        mediaRecorder?.stop()
+//        mediaRecorder?.reset()
+//        rec = false
+//        File(externalCacheDir,"cache.mp4")
+//            .renameTo(File(getExternalFilesDir("video"),fName))
+//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+//    }
 
 
     private fun ImageView.setContentAnimate(bitmap:Bitmap){
